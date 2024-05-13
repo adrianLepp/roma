@@ -31,6 +31,7 @@ private:
 	RotationControl *frame2;
 	RotationControl *frame1p2;
 	RotationControl *frame1c2;
+	RotationControl *frame1Alt;
 };
 
 class Interpolation : public QTimer

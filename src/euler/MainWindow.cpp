@@ -44,6 +44,7 @@ void MainWindow::setupUi() {
 	frame2 = new RotationControl("frame 2", Eigen::Vector3d( s,s,0), grey, server, this);
 	frame1p2 = new RotationControl("frame 1+2", Eigen::Vector3d(-2*s,-s,0), red, server, this);
 	frame1c2 = new RotationControl("frame 1*2", Eigen::Vector3d( 2*s,-s,0), green, server, this);
+	frame1Alt = new RotationControl("frame 1 alternative", Eigen::Vector3d(0,3*s,0), QColor("yellow"), server, this);
 
 	// add those widgets to the vertical layout of the MainWindow's central widget
 	QVBoxLayout *layout = new QVBoxLayout(central);
@@ -51,6 +52,7 @@ void MainWindow::setupUi() {
 	layout->addWidget(frame2);
 	layout->addWidget(frame1p2);
 	layout->addWidget(frame1c2);
+	layout->addWidget(frame1Alt);
 
 	this->setCentralWidget(central);
 
@@ -68,7 +70,9 @@ void MainWindow::setupUi() {
 	connect(frame1, SIGNAL(valueChanged(Eigen::Quaterniond)), timer, SLOT(setStart(Eigen::Quaterniond)));
 	connect(frame2, SIGNAL(valueChanged(Eigen::Quaterniond)), timer, SLOT(setEnd(Eigen::Quaterniond)));
 	connect(timer, SIGNAL(valueChanged(Eigen::Quaterniond)), frameSlerp, SLOT(setValue(Eigen::Quaterniond)));
+	linkAxes(frame1, frameSlerp);
 	timer->start(50);
+
 }
 
 void MainWindow::updateOrientation()
@@ -78,6 +82,9 @@ void MainWindow::updateOrientation()
 
 	Eigen::Vector3d e = frame1->eulerAngles() + frame2->eulerAngles();
 	frame1p2->setEulerAngles(e[0], e[1], e[2]);
+
+	frame1Alt->setEulerAxes(2,1,2);
+	frame1Alt->setValue(frame1->value());
 }
 
 Interpolation::Interpolation(const Eigen::Quaterniond &q1,
