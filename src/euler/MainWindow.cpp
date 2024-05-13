@@ -1,6 +1,7 @@
 // include headers declaring the used class interfaces
 #include "MainWindow.h"
 #include "RotationControl.h"
+#include "Interpolation.h"
 
 // these are system includes (from Qt, Eigen, ROS)
 #include <QVBoxLayout>
@@ -56,4 +57,26 @@ void MainWindow::setupUi() {
 	linkAxes(frame1, frame2);
 	linkAxes(frame1, frame1p2);
 	linkAxes(frame1, frame1c2);
+
+	frame1p2->setDisabled(true);
+	frame1c2->setDisabled(true);
+	connect(frame1, SIGNAL(valueChanged(Eigen::Quaterniond)), this, SLOT(updateFrames()));
+	connect(frame2, SIGNAL(valueChanged(Eigen::Quaterniond)), this, SLOT(updateFrames()));
+
+	RotationControl *frameI = new RotationControl("interpolated", Eigen::Vector3d(0,3*s,0), QColor("yellow"), server, this);
+	layout->addWidget(frameI); frameI->setDisabled(true);
+	Interpolation *timer = new Interpolation(frame1->value(), frame2->value(), this);
+	connect(frame1, SIGNAL(valueChanged(Eigen::Quaterniond)), timer, SLOT(setStart(Eigen::Quaterniond)));
+	connect(frame2, SIGNAL(valueChanged(Eigen::Quaterniond)), timer, SLOT(setEnd(Eigen::Quaterniond)));
+	connect(timer, SIGNAL(valueChanged(Eigen::Quaterniond)), frameI, SLOT(setValue(Eigen::Quaterniond)));
+	timer->start(100);
+}
+
+void MainWindow::updateFrames()
+{
+	Eigen::Quaterniond q = frame2->value() * frame1->value();
+	frame1c2->setValue(q);
+
+	Eigen::Vector3d e = frame1->eulerAngles() + frame2->eulerAngles();
+	frame1p2->setEulerAngles(e[0], e[1], e[2]);
 }

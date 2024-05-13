@@ -123,20 +123,25 @@ static visualization_msgs::Marker createBoxMarker(double x, double y, double z,
 	return marker;
 }
 
-static visualization_msgs::Marker display_arrowMarker(const Eigen::Vector3d &dir, const double r, const double g, const double b) {
+/// create a visual marker, here an arrow of given size (scale), direction, and color
+static visualization_msgs::Marker createArrowMarker(double scale,
+                                                    const Eigen::Vector3d &dir,
+                                                    const QColor &color) {
 	visualization_msgs::Marker marker;
 
 	marker.type = visualization_msgs::Marker::ARROW;
-	marker.scale.x = 0.5;
-	marker.scale.y = 0.05;
-	marker.scale.z = 0.05;
+	marker.scale.x = scale;
+	marker.scale.y = 0.1*scale;
+	marker.scale.z = 0.1*scale;
 
-	updatePose(marker.pose, Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d::UnitX(), dir));
+	// set arrow's orientation from given direction
+	updatePose(marker.pose,
+	           Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d::UnitX(), dir));
 
-	marker.color.a =1;
-	marker.color.r = r;
-	marker.color.g = g;
-	marker.color.b = b;
+	marker.color.r = color.redF();
+	marker.color.g = color.greenF();
+	marker.color.b = color.blueF();
+	marker.color.a = color.alphaF();
 
 	return marker;
 }
@@ -166,10 +171,10 @@ void RotationControl::createInteractiveMarker(const Eigen::Vector3d &pos,
 	visualization_msgs::InteractiveMarkerControl ctrl = createViewPlaneControl();
 	// each control can have multiple markers determining its visual appearance
 	ctrl.markers.push_back(createBoxMarker(3*s, 2*s, 1*s, color));
-
-	ctrl.markers.push_back(display_arrowMarker(Eigen::Vector3d::UnitX(), 1, 0, 0));
-	ctrl.markers.push_back(display_arrowMarker(Eigen::Vector3d::UnitY(), 0, 1, 0));
-	ctrl.markers.push_back(display_arrowMarker(Eigen::Vector3d::UnitZ(), 0, 0, 1));
+	// add an arrow for each axis
+	ctrl.markers.push_back(createArrowMarker(3*s, Eigen::Vector3d::UnitX(), QColor("red")));
+	ctrl.markers.push_back(createArrowMarker(3*s, Eigen::Vector3d::UnitY(), QColor("green")));
+	ctrl.markers.push_back(createArrowMarker(3*s, Eigen::Vector3d::UnitZ(), QColor("blue")));
 
 	// add the control to the interactive marker
 	imarker.controls.push_back(ctrl);
