@@ -123,6 +123,24 @@ static visualization_msgs::Marker createBoxMarker(double x, double y, double z,
 	return marker;
 }
 
+static visualization_msgs::Marker display_arrowMarker(const Eigen::Vector3d &dir, const double r, const double g, const double b) {
+	visualization_msgs::Marker marker;
+
+	marker.type = visualization_msgs::Marker::ARROW;
+	marker.scale.x = 0.5;
+	marker.scale.y = 0.05;
+	marker.scale.z = 0.05;
+
+	updatePose(marker.pose, Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d::UnitX(), dir));
+
+	marker.color.a =1;
+	marker.color.r = r;
+	marker.color.g = g;
+	marker.color.b = b;
+
+	return marker;
+}
+
 /// create an interactive marker located at given position
 void RotationControl::createInteractiveMarker(const Eigen::Vector3d &pos,
                                               const QColor &color) {
@@ -148,6 +166,10 @@ void RotationControl::createInteractiveMarker(const Eigen::Vector3d &pos,
 	visualization_msgs::InteractiveMarkerControl ctrl = createViewPlaneControl();
 	// each control can have multiple markers determining its visual appearance
 	ctrl.markers.push_back(createBoxMarker(3*s, 2*s, 1*s, color));
+
+	ctrl.markers.push_back(display_arrowMarker(Eigen::Vector3d::UnitX(), 1, 0, 0));
+	ctrl.markers.push_back(display_arrowMarker(Eigen::Vector3d::UnitY(), 0, 1, 0));
+	ctrl.markers.push_back(display_arrowMarker(Eigen::Vector3d::UnitZ(), 0, 0, 1));
 
 	// add the control to the interactive marker
 	imarker.controls.push_back(ctrl);
