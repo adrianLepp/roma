@@ -15,6 +15,6 @@
 		<param name="publish_frequency" type="double" value="10.0"/>
 	</node>
 
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find lecture)/launch/ikkdl.rviz"/>
-	<node name="ikkdl" pkg="lecture" type="ikkdl" />
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find roma)/launch/ikkdl.rviz"/>
+	<node name="ikkdl" pkg="roma" type="ikkdl" />
 </launch>

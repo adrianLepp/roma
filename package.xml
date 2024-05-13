@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>lecture</name>
+  <name>roma</name>
   <version>0.1.0</version>
-  <description>Example programs for my robotics lecture</description>
+  <description>Example programs for my robotics roma</description>
 
   <maintainer email="rhaschke@techfak.uni-bielefeld.de">Robert Haschke</maintainer>
   <author email="rhaschke@techfak.uni-bielefeld.de">Robert Haschke</author>

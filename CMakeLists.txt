@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(lecture)
+project(roma)
 
 find_package(catkin REQUIRED COMPONENTS roscpp interactive_markers kdl_parser tf_conversions)
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
@@ -21,7 +21,7 @@ find_package(Eigen3 REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES lecture
+#  LIBRARIES roma
   CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
 )
