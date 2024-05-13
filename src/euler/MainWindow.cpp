@@ -6,6 +6,8 @@
 #include <QVBoxLayout>
 #include <Eigen/Core>
 #include <ros/ros.h>
+#include <QMutexLocker>
+
 
 MainWindow::MainWindow(QWidget *parent) :
    QMainWindow(parent), spinner(1)
@@ -40,8 +42,8 @@ void MainWindow::setupUi() {
 	QColor grey("grey"), red("red"), green("green");
 	frame1 = new RotationControl("frame 1", Eigen::Vector3d(-s,s,0), grey, server, this);
 	frame2 = new RotationControl("frame 2", Eigen::Vector3d( s,s,0), grey, server, this);
-	frame1p2 = new RotationControl("frame 1+2", Eigen::Vector3d(-s,-s,0), red, server, this);
-	frame1c2 = new RotationControl("frame 1*2", Eigen::Vector3d( s,-s,0), green, server, this);
+	frame1p2 = new RotationControl("frame 1+2", Eigen::Vector3d(-2*s,-s,0), red, server, this);
+	frame1c2 = new RotationControl("frame 1*2", Eigen::Vector3d( 2*s,-s,0), green, server, this);
 
 	// add those widgets to the vertical layout of the MainWindow's central widget
 	QVBoxLayout *layout = new QVBoxLayout(central);
@@ -56,4 +58,55 @@ void MainWindow::setupUi() {
 	linkAxes(frame1, frame2);
 	linkAxes(frame1, frame1p2);
 	linkAxes(frame1, frame1c2);
+
+	connect(frame1, SIGNAL(valueChanged(Eigen::Quaterniond)), this, SLOT(updateOrientation()));
+	connect(frame2, SIGNAL(valueChanged(Eigen::Quaterniond)), this, SLOT(updateOrientation()));
+
+	RotationControl *frameSlerp = new RotationControl("interpolated", Eigen::Vector3d(0,-s,0), QColor("blue"), server, this);
+	layout->addWidget(frameSlerp);
+	Interpolation *timer = new Interpolation(frame1->value(), frame2->value(), this);
+	connect(frame1, SIGNAL(valueChanged(Eigen::Quaterniond)), timer, SLOT(setStart(Eigen::Quaterniond)));
+	connect(frame2, SIGNAL(valueChanged(Eigen::Quaterniond)), timer, SLOT(setEnd(Eigen::Quaterniond)));
+	connect(timer, SIGNAL(valueChanged(Eigen::Quaterniond)), frameSlerp, SLOT(setValue(Eigen::Quaterniond)));
+	timer->start(50);
+}
+
+void MainWindow::updateOrientation()
+{
+	Eigen::Quaterniond q = frame2->value() * frame1->value();
+	frame1c2->setValue(q);
+
+	Eigen::Vector3d e = frame1->eulerAngles() + frame2->eulerAngles();
+	frame1p2->setEulerAngles(e[0], e[1], e[2]);
+}
+
+Interpolation::Interpolation(const Eigen::Quaterniond &q1,
+                             const Eigen::Quaterniond &q2,
+                             QObject* parent)
+   :_q1(q1), _q2(q2)
+{
+	_t = 0.0;
+	connect(this, SIGNAL(timeout()), this, SLOT(step()));
+}
+
+void Interpolation::setStart(const Eigen::Quaterniond &q)
+{
+	QMutexLocker lock(&_mutex);
+	_q1 = q;
+	_t = 0;
+}
+
+void Interpolation::setEnd(const Eigen::Quaterniond &q)
+{
+	QMutexLocker lock(&_mutex);
+	_q2 = q;
+	_t = 0;
+}
+
+void Interpolation::step()
+{
+	QMutexLocker lock(&_mutex);
+	_t += 0.05;
+	if (_t > 1.) _t = -1.;
+	emit valueChanged(_q1.slerp(std::fabs(_t), _q2));
 }
