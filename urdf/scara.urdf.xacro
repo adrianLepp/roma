@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+<robot name="scara_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <material name="blue">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+    </material>
+    <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+    </material>
+    <material name="white">
+        <color rgba="1.0 1.0 1.0 1.0"/>
+    </material>
+       <material name="grey">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+    </material>
+
+    <xacro:property name="l0" value="0.7" />
+    <xacro:property name="l1" value="0.6" />
+    <xacro:property name="l2" value="0.8" />
+
+    <xacro:property name="r" value="0.1" />
+    <xacro:property name="d1" value="1" />
+    <xacro:property name="d2" value="0.2" />
+    <xacro:property name="d4" value="0.1" />
+    <xacro:property name="d5" value="0.1" />
+    <xacro:property name="d3" value="${d1+2*d2-d4-d5-l0}" />
+
+
+    <link name="world"/>
+    <link name="base_link">
+        <visual>
+            <origin xyz="0.0 0.0 ${d1/2}" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder length="${d1}" radius="${r}"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
+    <joint name="base_joint" type="fixed">
+        <parent link="world"/>
+        <child link="base_link"/>
+    </joint>
+
+    <link name="arm1_cylinder">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder length="${d2}" radius="${r}"/>
+            </geometry>
+            <material name="white"/>
+        </visual>
+    </link>
+    <joint name="arm1_joint_Gelenk" type="revolute">
+        <origin xyz="0.0 0.0 ${d1+d2/2}" rpy="0.0 0.0 0.0"/>
+        <parent link="base_link"/>
+        <child link="arm1_cylinder"/>
+        <axis xyz="0.0 0.0 ${d1+d2}"/>
+        <limit lower="-1.0" upper="1.0" effort="1000.0" velocity="1000.0"/>
+    </joint>
+
+    <link name="arm1_connection">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 1.57075 0.0"/>
+            <geometry>
+                <cylinder length="${l1}" radius="0.05"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
+    <joint name="arm1_joint_box" type="fixed">
+        <origin xyz="${l1/2} 0.0 0.0" rpy="0.0 0.0 0.0" />
+        <parent link="arm1_cylinder"/>
+        <child link="arm1_connection"/>
+    </joint>
+
+    <link name="arm2_cylinder1">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder length="${d2}" radius="${r}"/>
+            </geometry>
+            <material name="grey"/>
+        </visual>
+    </link>
+    <joint name="arm2_joint_Gelenk" type="fixed">
+        <origin xyz="${l1/2} 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <parent link="arm1_connection"/>
+        <child link="arm2_cylinder1"/>
+    </joint>
+
+    <link name="arm2_cylinder2">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder length="${d2}" radius="${r}"/>
+            </geometry>
+            <material name="white"/>
+        </visual>
+    </link>
+    <joint name="arm2_joint" type="revolute">
+        <origin xyz="0.0 0.0 ${d2}" rpy="0.0 0.0 0.0"/>
+        <parent link="arm2_cylinder1"/>
+        <child link="arm2_cylinder2"/>
+        <axis xyz="0.0 0.0 1.0"/>
+        <limit lower="-1.0" upper="1.0" effort="1000.0" velocity="1000.0"/>
+    </joint>
+
+    <link name="arm2_connection">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 1.57075 0.0"/>
+            <geometry>
+                <cylinder length="${l2}" radius="0.05"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
+    <joint name="arm2_joint_box" type="fixed">
+        <origin xyz="${l2/2} 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <parent link="arm2_cylinder2"/>
+        <child link="arm2_connection"/>
+    </joint>
+
+    <link name="arm3_cylinder1">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder length="${d2}" radius="${r}"/>
+            </geometry>
+            <material name="grey"/>
+        </visual>
+    </link>
+    <joint name="arm3_joint_Gelenk" type="fixed">
+        <origin xyz="${l2/2} 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <parent link="arm2_connection"/>
+        <child link="arm3_cylinder1"/>
+    </joint>
+
+    <link name="arm3_prismatic">
+        <visual>
+            <origin xyz="0.0 0.0 ${-d3/2}" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder length="${d3}" radius="0.075"/>
+            </geometry>
+            <material name="white"/>
+        </visual>
+    </link>
+    <joint name="arm3_joint" type="prismatic">
+        <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/>
+        <parent link="arm3_cylinder1"/>
+        <child link="arm3_prismatic"/>
+        <axis xyz="0.0 0.0 1.0"/>
+        <limit lower="0.0" upper="${d3-d2}" effort="1000.0" velocity="1000.0"/>
+    </joint>
+
+    <link name="arm3_connection">
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder length="${d4}" radius="0.025"/>
+            </geometry>
+            <material name="grey"/>
+        </visual>
+    </link>
+    <joint name="arm3_joint_box" type="revolute">
+            <origin xyz="0.0 0.0 ${-d3-d4/2}" rpy="0.0 0.0 0.0"/>
+            <parent link="arm3_prismatic"/>
+            <child link="arm3_connection"/>
+            <axis xyz="0.0 0.0 1.0"/>
+            <limit lower="-1.5" upper="1.5" effort="1000.0" velocity="1000.0"/>
+    </joint>
+
+    <link name="Hand_Base">
+        <visual>
+            <origin xyz="0.0 0.0 ${d4/2}" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <box size="${d5} ${d5} ${d5}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+    </link>
+    <joint name="Hand_Base_joint" type="fixed">
+        <origin xyz="0.0 0.0 ${-d5 - d4/2}" rpy="0.0 0.0 0.0"/>
+        <parent link="arm3_connection"/>
+        <child link="Hand_Base"/>
+    </joint>
+    
+</robot>
