@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <rosparam command="load" file="$(dirname)/../urdf/scara.urdf" param="robot_description" />
+
+    <!-- Broadcast static tf for robot root -->
+  <node name="virtual_joint" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 world base_link" />
+
+  <!-- Publish joint states -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="/use_gui" value="false" />
+    <rosparam param="/source_list">[/target_joint_states]</rosparam>
+  </node>
+
+  <!-- Given the published joint states, publish tf for all robot links -->
+  <node name="rsp" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" />
+
+  <!-- Run Rviz -->
+  <node name="$(anon rviz)" pkg="rviz" type="rviz" output="screen" args='-d "$(dirname)/demo.rviz"' />
+</launch>
