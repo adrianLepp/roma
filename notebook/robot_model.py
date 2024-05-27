@@ -10,7 +10,10 @@ from tf import transformations as tf
 def get_value(xml, child=None, attribute=None):
     """Get value of given attribute. If child arg is present, fetch first child of given name."""
     if child is not None:
-        xml = xml.getElementsByTagName(child)[0]
+        try:
+            xml = xml.getElementsByTagName(child)[0]
+        except:
+            print("Error: Child not found")
     if attribute is not None:
         return xml.getAttribute(attribute)
 
@@ -203,7 +206,7 @@ if __name__ == "__main__":
         joints = {j.name: random.uniform(j.min, j.max) for j in robot.active_joints}
         pub.publish(JointState(name=joints.keys(), position=joints.values()))
 
-        T, J = robot.fk("panda_link8", joints)
+        T, J = robot.fk("Hand_Base", joints)
         marker_pub.publish(frame(T))
 
         rospy.rostime.wallsleep(1)

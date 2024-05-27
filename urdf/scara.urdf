@@ -148,6 +148,7 @@
     <parent link="arm3_prismatic"/>
     <child link="arm3_connection"/>
     <axis xyz="0.0 0.0 1.0"/>
+    <mimic joint="arm1_joint_Gelenk" multiplier="1" offset="1"/>
     <limit effort="1000.0" lower="-1.5" upper="1.5" velocity="1000.0"/>
   </joint>
   <link name="Hand_Base">
