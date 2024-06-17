@@ -110,10 +110,26 @@ class Controller(object):
         target[0:3, 3] += target[0:3, 0:3].dot(offset)
         self.position_control(target)
 
+def lissajousCurve(target, w, n):
+    t = rospy.get_time()
+    x0 = target[0,3]
+    y0 = target[1,3]
+
+    x = x0 + 0.3 * numpy.sin(w * t)
+    y = y0 + 0.3 * numpy.cos(n* w * t)
+
+    target[0,3] = x
+    target[1,3] = y
+
+    return target
+
 if __name__ == '__main__':
     rospy.init_node('ik')  # create a ROS node
     c = Controller()
     rate = rospy.Rate(50)  # Run control loop at 50 Hz
     while not rospy.is_shutdown():
-        c.position_control(c.im_server.target)
+
+        newTarget = lissajousCurve(numpy.copy(c.im_server.target), 0.1*numpy.pi, 2)
+        c.position_control(newTarget)
+        #c.lissajous()
         rate.sleep()
