@@ -101,6 +101,14 @@ class Controller(object):
         q_delta = self.solve(self.J[0:3, :], v)
         self.actuate(q_delta)
 
+    def lissajous(self, w=0.1*2*numpy.pi, n=2):
+        # Compute offset for Lissajous figure
+        t = rospy.get_time()
+        offset = numpy.asarray([0.3 * numpy.sin(w * t), 0.3 * numpy.sin(n * w * t), 0.])
+        # add offset to current marker pose to draw Lissajous figure in x-y-plane of marker
+        target = numpy.copy(self.im_server.target)
+        target[0:3, 3] += target[0:3, 0:3].dot(offset)
+        self.position_control(target)
 
 if __name__ == '__main__':
     rospy.init_node('ik')  # create a ROS node
