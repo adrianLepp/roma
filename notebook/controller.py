@@ -126,6 +126,18 @@ class Controller(object):
         q_delta = self.solve(self.J, xi)
         self.actuate(q_delta)
 
+damping = 0.1
+threshold = 0.1
+
+def invert_clip(s):
+    return 1./s if s > threshold else 0.
+
+def invert_damp(s):
+    return s/(s**2 + damping**2)
+
+def invert_smooth_clip(s):
+    return s/(threshold**2) if s < threshold else 1./s
+
 def lissajousCurve(target, w, n):
     t = rospy.get_time()
     x0 = target[0,3]
