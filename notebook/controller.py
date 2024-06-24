@@ -11,6 +11,7 @@ from tf import transformations as tf
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from robot_model import RobotModel, Joint
 from markers import frame
+from tf import transformations as tf
 
 
 class MyInteractiveMarkerServer(InteractiveMarkerServer):
@@ -107,19 +108,23 @@ class Controller(object):
         """Given homogenous transforms of target and current pose, compute error vector"""
         return T_tgt[0:3, 3]-T_cur[0:3, 3]
 
+    @staticmethod
+    def orientation_error(T_tgt, T_cur):
+        R = numpy.identity(4)
+        R[0:3,0:3] = numpy.linalg.pinv(T_cur[0:3, 0:3], 0.01).dot(T_tgt[0:3, 0:3]) 
+        return R
+
+
     def position_control(self, target):
         v = self.position_error(target, self.T)
-        q_delta = self.solve(self.J[0:3, :], v)
-        self.actuate(q_delta)
+        R = self.orientation_error(target, self.T)
+        angle, axis, _ = tf.rotation_from_matrix(R)
+        omega = self.T[0:3,0:3].dot(angle*axis)# reicht dieses omega_b? oder direkt angel*axis?
 
-    def lissajous(self, w=0.1*2*numpy.pi, n=2):
-        # Compute offset for Lissajous figure
-        t = rospy.get_time()
-        offset = numpy.asarray([0.3 * numpy.sin(w * t), 0.3 * numpy.sin(n * w * t), 0.])
-        # add offset to current marker pose to draw Lissajous figure in x-y-plane of marker
-        target = numpy.copy(self.im_server.target)
-        target[0:3, 3] += target[0:3, 0:3].dot(offset)
-        self.position_control(target)
+        xi = numpy.concatenate((v, omega))
+        #q_delta = self.solve(self.J[0:3, :], v_w)
+        q_delta = self.solve(self.J, xi)
+        self.actuate(q_delta)
 
 def lissajousCurve(target, w, n):
     t = rospy.get_time()
