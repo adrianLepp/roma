@@ -33,7 +33,7 @@ class MyInteractiveMarkerServer(InteractiveMarkerServer):
         # Create a control to move a (sphere) marker around with the mouse
         control = InteractiveMarkerControl()
         control.name = "move_3d"
-        control.interaction_mode = InteractiveMarkerControl.MOVE_3D
+        control.interaction_mode = InteractiveMarkerControl.MOVE_ROTATE_3D
         control.markers.extend(frame(numpy.identity(4), scale=0.1, frame_id='').markers)
         im.controls.append(control)
 
@@ -42,6 +42,17 @@ class MyInteractiveMarkerServer(InteractiveMarkerServer):
             control = InteractiveMarkerControl()
             control.name = "move_" + dir
             control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
+            control.orientation.x = 1 if dir == 'x' else 0
+            control.orientation.y = 1 if dir == 'y' else 0
+            control.orientation.z = 1 if dir == 'z' else 0
+            control.orientation.w = 1
+            im.controls.append(control)
+
+        # Create controls to rotate the marker
+        for dir in 'xyz':
+            control = InteractiveMarkerControl()
+            control.name = "rotate_" + dir
+            control.interaction_mode = InteractiveMarkerControl.ROTATE_AXIS
             control.orientation.x = 1 if dir == 'x' else 0
             control.orientation.y = 1 if dir == 'y' else 0
             control.orientation.z = 1 if dir == 'z' else 0
