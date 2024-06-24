@@ -101,6 +101,15 @@ class Controller(object):
 
     def solve(self, J, error):
         """Inverse velocity kinematics: q_delta = J^+ * error"""
+        U, S, Vt = numpy.linalg.svd(J)
+
+        rank = min(U.shape[0], Vt.shape[1])
+        for i in range(rank):
+            S[i] = invert_smooth_clip(S[i])
+
+        #J = numpy.dot(U, numpy.dot(numpy.diag(S), Vt))
+        #J = numpy.dot(Vt.T, numpy.dot(numpy.diag(S), U.T))
+        #qdot += numpy.dot(Vt.T[:, 0:rank], S * U.T.dot(numpy.array(e) - J.dot(qdot)))
         return numpy.linalg.pinv(J, 0.01).dot(error)
 
     @staticmethod
