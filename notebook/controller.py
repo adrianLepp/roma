@@ -107,10 +107,10 @@ class Controller(object):
         for i in range(rank):
             S[i] = invert_smooth_clip(S[i])
 
-        #J = numpy.dot(U, numpy.dot(numpy.diag(S), Vt))
-        #J = numpy.dot(Vt.T, numpy.dot(numpy.diag(S), U.T))
-        #qdot += numpy.dot(Vt.T[:, 0:rank], S * U.T.dot(numpy.array(e) - J.dot(qdot)))
-        return numpy.linalg.pinv(J, 0.01).dot(error)
+        qdot = numpy.dot(Vt.T[:, 0:rank], S * U.T.dot(numpy.array(error)))
+        
+        return qdot
+        #return numpy.linalg.pinv(J, 0.01).dot(error)
 
     @staticmethod
     def position_error(T_tgt, T_cur):
